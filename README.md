@@ -46,6 +46,8 @@ jobs:
 
 ## Badge / 徽章
 
+> 🖥️ **Prefer a visual guide? / 更喜欢可视化引导？** → [jadegate.io/guide](https://jadegate.io/guide/) — Interactive step-by-step verification / 交互式分步盖章教程
+
 After verification passes, add this to your README / 验证通过后，在 README 中添加：
 
 ```markdown
@@ -73,6 +75,12 @@ No LLM. No probability. Pure math. / 无大模型，无概率，纯数学。
 | 💠 | Origin | Signed by JadeGate Root CA / 根 CA 签发 |
 | 🔷 | Organization | Signed by authorized org / 授权组织签发 |
 | 🔹 | Community | Passed CI verification / CI 验证通过 |
+
+## Get Started / 开始使用
+
+- 📖 **Interactive guide / 交互式引导**：[jadegate.io/guide](https://jadegate.io/guide/)
+- 🔍 **Check verification status / 查询验证状态**：[jadegate.io/verify/YOUR_ORG/YOUR_REPO](https://jadegate.io/verify/)
+- 📦 **Core library / 核心库**：[jade-core](https://github.com/JadeGate/jade-core)
 
 ## License / 许可证
 
