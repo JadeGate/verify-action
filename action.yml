@@ -1,0 +1,172 @@
+name: '💠 JadeGate Verify'
+description: 'Verify AI agent skills & MCP servers with JadeGate 5-layer security inspection'
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  path:
+    description: 'Path to skill JSON file or directory of skills'
+    required: true
+    default: '.'
+  fail-on-warning:
+    description: 'Fail the check if warnings are found'
+    required: false
+    default: 'false'
+  badge:
+    description: 'Register result with JadeGate badge API'
+    required: false
+    default: 'true'
+  token:
+    description: 'JadeGate API token for badge registration (set as secret)'
+    required: false
+    default: ''
+
+outputs:
+  passed:
+    description: 'Number of skills that passed verification'
+    value: ${{ steps.verify.outputs.passed }}
+  failed:
+    description: 'Number of skills that failed verification'
+    value: ${{ steps.verify.outputs.failed }}
+  result:
+    description: 'Overall result: pass or fail'
+    value: ${{ steps.verify.outputs.result }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install JadeGate
+      shell: bash
+      run: pip install jadegate
+
+    - name: Run 5-layer verification
+      id: verify
+      shell: bash
+      run: |
+        python3 << 'PYEOF'
+        import os, sys, json, glob
+
+        from jade_core.validator import JadeValidator
+
+        path = "${{ inputs.path }}"
+        fail_on_warning = "${{ inputs.fail-on-warning }}" == "true"
+
+        v = JadeValidator()
+        passed = failed = warnings = 0
+        results = []
+
+        # Collect skill files
+        files = []
+        if os.path.isfile(path):
+            files = [path]
+        elif os.path.isdir(path):
+            files = sorted(glob.glob(os.path.join(path, "**/*.json"), recursive=True))
+            files = [f for f in files if not f.endswith(".sig.json")]
+        else:
+            print(f"❌ Path not found: {path}")
+            sys.exit(1)
+
+        if not files:
+            print("⚠️ No skill JSON files found")
+            sys.exit(0)
+
+        for f in files:
+            try:
+                r = v.validate_file(f)
+            except Exception as e:
+                print(f"⚠️ Skipping {f}: {e}")
+                continue
+
+            fname = os.path.basename(f)
+            warns = [i for i in r.issues if i.severity.value == "warning"]
+            errs = [i for i in r.issues if i.severity.value == "error"]
+
+            if r.valid:
+                passed += 1
+                if warns:
+                    warnings += len(warns)
+                    print(f"✅ {fname} ⚠️ {len(warns)} warnings")
+                    for w in warns:
+                        print(f"   ⚠️ {w.code}: {w.message}")
+                else:
+                    print(f"✅ {fname}")
+                results.append({"file": fname, "valid": True, "warnings": len(warns)})
+            else:
+                failed += 1
+                print(f"❌ {fname}")
+                for e in errs:
+                    print(f"   ❌ {e.code}: {e.message}")
+                results.append({"file": fname, "valid": False, "errors": len(errs)})
+
+        print(f"\n{'='*50}")
+        print(f"💠 JadeGate Verification Complete")
+        print(f"   ✅ {passed} passed  ❌ {failed} failed  ⚠️ {warnings} warnings")
+        print(f"{'='*50}")
+
+        with open(os.environ["GITHUB_OUTPUT"], "a") as gh:
+            gh.write(f"passed={passed}\n")
+            gh.write(f"failed={failed}\n")
+            result = "fail" if failed > 0 or (fail_on_warning and warnings > 0) else "pass"
+            gh.write(f"result={result}\n")
+
+        with open("/tmp/jadegate_results.json", "w") as f:
+            json.dump({"passed": passed, "failed": failed, "warnings": warnings, "results": results}, f)
+
+        if failed > 0 or (fail_on_warning and warnings > 0):
+            sys.exit(1)
+        PYEOF
+
+    - name: Register badge
+      if: inputs.badge == 'true' && inputs.token != '' && steps.verify.outputs.result == 'pass'
+      shell: bash
+      env:
+        JADEGATE_TOKEN: ${{ inputs.token }}
+      run: |
+        python3 << 'PYEOF'
+        import os, json, urllib.request, urllib.error
+
+        token = os.environ.get("JADEGATE_TOKEN", "")
+        if not token:
+            print("⚠️ No JADEGATE_TOKEN, skipping badge registration")
+            exit(0)
+
+        repo = os.environ.get("GITHUB_REPOSITORY", "unknown/unknown")
+        sha = os.environ.get("GITHUB_SHA", "unknown")
+        ref = os.environ.get("GITHUB_REF", "unknown")
+
+        with open("/tmp/jadegate_results.json") as f:
+            results = json.load(f)
+
+        payload = json.dumps({
+            "repo": repo,
+            "sha": sha,
+            "ref": ref,
+            "passed": results["passed"],
+            "failed": results["failed"],
+            "warnings": results["warnings"],
+            "results": results["results"]
+        }).encode()
+
+        req = urllib.request.Request(
+            "https://jadegate.io/api/badge/register",
+            data=payload,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}"
+            },
+            method="POST"
+        )
+
+        try:
+            resp = urllib.request.urlopen(req, timeout=10)
+            data = json.loads(resp.read())
+            print(f"🔹 Badge registered: https://jadegate.io/badge/{repo}")
+        except urllib.error.URLError as e:
+            print(f"⚠️ Badge registration failed (non-fatal): {e}")
+        PYEOF
