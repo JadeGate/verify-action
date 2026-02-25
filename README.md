@@ -1,5 +1,10 @@
 # 💠 JadeGate Verify Action
 
+[![JadeGate 💠 Origin Verified](https://img.shields.io/endpoint?url=https://jadegate.io/api/badge/JadeGate/jade-core.json)](https://jadegate.io/verify/?repo=JadeGate/jade-core)
+
+> **Pass verification → Get your badge automatically** ☝️ This is what you get.
+> **通过验证 → 自动获得徽章** ☝️ 这就是你将获得的效果。
+
 Verify AI agent skills & MCP servers with JadeGate's 5-layer deterministic security inspection — directly in your CI pipeline.
 
 使用 JadeGate 五层确定性安全检查，在 CI 中验证 AI agent 技能和 MCP 服务器。
