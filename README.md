@@ -51,10 +51,10 @@ jobs:
 After verification passes, add this to your README / 验证通过后，在 README 中添加：
 
 ```markdown
-[![JadeGate Verified](https://img.shields.io/badge/JadeGate-🔹_Community_Verified-10b981?style=flat-square)](https://jadegate.io/verify/YOUR_ORG/YOUR_REPO)
+[![JadeGate Verified](https://img.shields.io/endpoint?url=https://jadegate.io/api/badge/YOUR_ORG/YOUR_REPO.json)](https://jadegate.io/verify/?repo=YOUR_ORG/YOUR_REPO)
 ```
 
-![JadeGate Verified](https://img.shields.io/badge/JadeGate-🔹_Community_Verified-10b981?style=flat-square)
+![JadeGate Verified](https://img.shields.io/endpoint?url=https://jadegate.io/api/badge/YOUR_ORG/YOUR_REPO.json)
 
 ## 5 Layers / 五层检查
 
