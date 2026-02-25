@@ -2,8 +2,8 @@
 
 [![JadeGate 💠 Origin Verified](https://img.shields.io/endpoint?url=https://jadegate.io/api/badge/JadeGate/jade-core.json)](https://jadegate.io/verify/?repo=JadeGate/jade-core)
 
-> **Pass verification → Get your badge automatically** ☝️ This is what you get.
-> **通过验证 → 自动获得徽章** ☝️ 这就是你将获得的效果。
+> **Pass CI verification → Get your 🔹 Community Verified badge.** The 💠 Origin badge above is root-signed (official projects only).
+> **通过 CI 验证 → 获得 🔹 社区验证徽章。** 上方 💠 根签名徽章仅限官方项目。
 
 Verify AI agent skills & MCP servers with JadeGate's 5-layer deterministic security inspection — directly in your CI pipeline.
 
